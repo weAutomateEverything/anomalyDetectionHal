@@ -6,7 +6,7 @@ import (
 	"github.com/weAutomateEverything/go2hal/database"
 	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/aws/aws-xray-sdk-go/strategy/sampling"
-	"github.com/weAutomateEverything/AnomalyDetectionHal/detector"
+	"github.com/weAutomateEverything/anomalyDetectionHal/detector"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 
@@ -14,7 +14,7 @@ import (
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"net/http"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-			"io/ioutil"
+	"io/ioutil"
 	"os/signal"
 	"syscall"
 	"fmt"
@@ -73,7 +73,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	httpLogger := log.With(logger, "component", "http")
-	mux.Handle("/api/anomaly/",detector.NewTransport(service,httpLogger))
+	mux.Handle("/api/anomaly/", detector.NewTransport(service, httpLogger))
 	mux.Handle("/api/metrics", promhttp.Handler())
 	mux.Handle("/api/swagger.json", swagger{})
 
@@ -89,10 +89,9 @@ func main() {
 		signal.Notify(c, syscall.SIGINT)
 		errs <- fmt.Errorf("%s", <-c)
 	}()
-	logger.Log("terminated", <- errs)
+	logger.Log("terminated", <-errs)
 
 }
-
 
 func accessControl(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -139,4 +138,3 @@ func (h swagger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write(b)
 	}
 }
-
