@@ -13,7 +13,7 @@ func makeAddDataEndpoint(s Service) endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-		return &addDataResponse{
+		return &AnomalyAddDataResponse{
 			AnomalyScore: anomaly,
 			Explination:  reason,
 		}, nil
@@ -25,7 +25,7 @@ type addDataRequest struct {
 	value float64
 }
 
-type addDataResponse struct {
+type AnomalyAddDataResponse struct {
 	AnomalyScore float64 `json:"anomaly_score"`
 	Explination  string  `json:"explination"`
 }
