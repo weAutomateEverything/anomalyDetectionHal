@@ -17,6 +17,8 @@ type x struct {
 }
 
 func (x *x) AddValueNow(ctx context.Context,key string, value float64) (annomaly float64, reason string, err error) {
+	ctx, seg := xray.BeginSegment(ctx,"detector.AddValueNow")
+	defer seg.Close(err)
 	xray.Capture(ctx, "detector.AddValueNow", func(ctx context.Context) error {
 		annomaly, reason, err = x.service.AddValueNow(ctx, key, value)
 		return err
