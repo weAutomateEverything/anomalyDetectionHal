@@ -18,6 +18,9 @@ import (
 	"os/signal"
 	"syscall"
 	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"net"
 )
 
 func main() {
@@ -77,11 +80,28 @@ func main() {
 	mux.Handle("/api/metrics", promhttp.Handler())
 	mux.Handle("/api/swagger.json", swagger{})
 
+	g := grpc.NewServer()
+	gServer := detector.NewGrpcBinding(service)
+	detector.RegisterAnomalyDetectorServer(g,gServer)
+	reflection.Register(g)
+
 	errs := make(chan error, 2)
+
+	ln, err := net.Listen("tcp", ":8006")
+	if err != nil {
+		logger.Log("transport", "grpc", "address", ":8006", "error", err)
+		errs <- err
+		panic(err)
+	}
 
 	go func() {
 		logger.Log("transport", "http", "address", ":8005", "msg", "listening")
 		errs <- http.ListenAndServe(":8005", xray.Handler(xray.NewFixedSegmentNamer("anomaly_detector"), accessControl(mux)))
+	}()
+
+	go func() {
+		logger.Log("transport", "http", "address", ":8006", "msg", "listening")
+		errs <- g.Serve(ln)
 	}()
 
 	go func() {
