@@ -1,26 +1,26 @@
 package main
 
 import (
-	"os"
-	"github.com/weAutomateEverything/mockXray"
-	"github.com/weAutomateEverything/go2hal/database"
-	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/aws/aws-xray-sdk-go/strategy/sampling"
-	"github.com/weAutomateEverything/anomalyDetectionHal/detector"
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/weAutomateEverything/anomalyDetectionHal/detector"
+	"github.com/weAutomateEverything/go2hal/database"
+	"github.com/weAutomateEverything/mockXray"
+	"os"
 
+	"fmt"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
-	"net/http"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"io/ioutil"
-	"os/signal"
-	"syscall"
-	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	"io/ioutil"
 	"net"
+	"net/http"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -82,7 +82,7 @@ func main() {
 
 	g := grpc.NewServer()
 	gServer := detector.NewGrpcBinding(service)
-	detector.RegisterAnomalyDetectorServer(g,gServer)
+	detector.RegisterAnomalyDetectorServer(g, gServer)
 	reflection.Register(g)
 
 	errs := make(chan error, 2)
