@@ -87,20 +87,20 @@ func main() {
 
 	errs := make(chan error, 2)
 
-	ln, err := net.Listen("tcp", ":8006")
+	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		logger.Log("transport", "grpc", "address", ":8006", "error", err)
+		logger.Log("transport", "grpc", "address", ":80", "error", err)
 		errs <- err
 		panic(err)
 	}
 
 	go func() {
-		logger.Log("transport", "http", "address", ":8005", "msg", "listening")
-		errs <- http.ListenAndServe(":8005", xray.Handler(xray.NewFixedSegmentNamer("anomaly_detector"), accessControl(mux)))
+		logger.Log("transport", "http", "address", ":80", "msg", "listening")
+		errs <- http.ListenAndServe(":80", xray.Handler(xray.NewFixedSegmentNamer("anomaly_detector"), accessControl(mux)))
 	}()
 
 	go func() {
-		logger.Log("transport", "http", "address", ":8006", "msg", "listening")
+		logger.Log("transport", "grpc", "address", ":8080", "msg", "listening")
 		errs <- g.Serve(ln)
 	}()
 
