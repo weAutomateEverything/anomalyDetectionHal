@@ -3,5 +3,5 @@ FROM alpine:latest
 COPY app /
 COPY swagger.json /
 ENTRYPOINT ["/app"]
-EXPOSE 8005
-EXPOSE 8006
+EXPOSE 80
+EXPOSE 8080
