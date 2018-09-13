@@ -1,0 +1,32 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+    # printenv
+    # pwd
+    - mkdir -p /go/src/github.com/weAutomateEverything/anomalyDetectionHal
+    - cp -R * /go/src/github.com/weAutomateEverything/anomalyDetectionHal/
+  pre_build:
+    commands:
+
+    finally:
+
+  build:
+    commands:
+    - go get github.com/weAutomateEverything/anomalyDetectionHal
+    - go build -ldflags '-linkmode=external' -o ./anomaly github.com/weAutomateEverything/anomalyDetectionHal
+    - go get -u github.com/go-swagger/go-swagger/cmd/swagger
+    - swagger generate spec -m -o ./swagger.json
+  post_build:
+    commands:
+
+    finally:
+
+artifacts:
+  files:
+  - anomaly
+  - swagger.json
+  - Dockerfile
+cache:
+  paths:
