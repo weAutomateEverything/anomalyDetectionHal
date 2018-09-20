@@ -1,12 +1,12 @@
 package detector
 
 import (
-	"time"
+	"fmt"
+	"golang.org/x/net/context"
 	"gonum.org/v1/gonum/stat"
 	"log"
 	"math"
-	"fmt"
-	"golang.org/x/net/context"
+	"time"
 )
 
 type Service interface {
@@ -51,8 +51,8 @@ func (s anomaly) AddValue(ctx context.Context, key string, value float64, t time
 
 	annomaly = (ha + da + ma) / 3
 
-	reason = fmt.Sprintf("The current value is %v. Using previous data for hour %v, minute %v. The normal value for this time is %v. Normally at this time on a %v the expected value would be %v. Normally at this time on the %v day of the month we would expect the value to be %v",
-		value, t.Hour(), t.Minute(), hm, t.Weekday(), dm, t.Day(), mm,
+	reason = fmt.Sprintf("The current value is %v. \nThe normal value for this time is %v. \nNormally at this time on a %v is %v. Normally at this time on the %v day of the month is %v",
+		value, hm, t.Weekday(), dm, t.Day(), mm,
 	)
 
 	return
