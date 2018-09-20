@@ -1,12 +1,12 @@
 package detector
 
 import (
-	"time"
+	"fmt"
+	"golang.org/x/net/context"
 	"gonum.org/v1/gonum/stat"
 	"log"
 	"math"
-	"fmt"
-	"golang.org/x/net/context"
+	"time"
 )
 
 type Service interface {
