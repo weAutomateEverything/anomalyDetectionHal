@@ -19,5 +19,5 @@ COPY anomaly /
 COPY swagger.json /
 
 ENTRYPOINT ["/anomaly"]
-EXPOSE 80
+EXPOSE 8081
 EXPOSE 8080
