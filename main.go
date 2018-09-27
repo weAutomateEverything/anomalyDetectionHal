@@ -1,13 +1,10 @@
 package main
 
 import (
-	"github.com/aws/aws-xray-sdk-go/strategy/sampling"
-	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/weAutomateEverything/anomalyDetectionHal/detector"
 	"github.com/weAutomateEverything/go2hal/database"
-	"github.com/weAutomateEverything/mockXray"
 	"os"
 
 	"fmt"
@@ -24,26 +21,6 @@ import (
 )
 
 func main() {
-	if os.Getenv("XRAY_URL") != "" {
-		var ss *sampling.LocalizedStrategy
-		if os.Getenv("XRAY_SAMPLING_RULES") != "" {
-			ss = getSampleStratergyFromFile()
-		} else {
-			ss = getDefaultSampleStratergy()
-		}
-
-		//XRAY
-		xray.Configure(xray.Config{
-			DaemonAddr:       os.Getenv("XRAY_URL"), // default
-			LogLevel:         "info",                // default
-			ServiceVersion:   "1.2.3",
-			SamplingStrategy: ss,
-		})
-
-	} else {
-		mockXray.StartMockXrayServer()
-	}
-
 	db := database.NewConnection()
 
 	store := detector.NewDataStore(db)
@@ -53,7 +30,6 @@ func main() {
 	logger = log.With(logger, "ts", log.DefaultTimestamp)
 
 	service := detector.NewService(store)
-	service = detector.NewXray(service)
 	service = detector.NewLoggingService(logger, service)
 	service = detector.NewPrometheus(kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
 		Namespace: "api",
@@ -89,14 +65,14 @@ func main() {
 
 	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		logger.Log("transport", "grpc", "address", ":80", "error", err)
+		logger.Log("transport", "grpc", "address", ":8080", "error", err)
 		errs <- err
 		panic(err)
 	}
 
 	go func() {
-		logger.Log("transport", "http", "address", ":80", "msg", "listening")
-		errs <- http.ListenAndServe(":80", xray.Handler(xray.NewFixedSegmentNamer("anomaly_detector"), accessControl(mux)))
+		logger.Log("transport", "http", "address", ":8081", "msg", "listening")
+		errs <- http.ListenAndServe(":8081", accessControl(mux))
 	}()
 
 	go func() {
@@ -126,22 +102,6 @@ func accessControl(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
-}
-
-func getSampleStratergyFromFile() *sampling.LocalizedStrategy {
-	ss, err := sampling.NewLocalizedStrategyFromFilePath(os.Getenv("XRAY_SAMPLING_RULES"))
-	if err != nil {
-		panic(err)
-	}
-	return ss
-}
-
-func getDefaultSampleStratergy() *sampling.LocalizedStrategy {
-	ss, err := sampling.NewLocalizedStrategy()
-	if err != nil {
-		panic(err)
-	}
-	return ss
 }
 
 type swagger struct {
