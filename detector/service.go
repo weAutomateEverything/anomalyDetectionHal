@@ -10,8 +10,8 @@ import (
 )
 
 type Service interface {
-	AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, reason string, err error)
-	AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, reason string, err error)
+	AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, average float64, reason string, err error)
+	AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, average float64, reason string, err error)
 }
 
 func NewService(store Store) Service {
@@ -25,24 +25,24 @@ type anomaly struct {
 	store Store
 }
 
-func (s anomaly) AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, reason string, err error) {
+func (s anomaly) AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, average float64, reason string, err error) {
 	return s.AddValue(ctx, key, value, time.Now())
 }
 
-func (s anomaly) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, reason string, err error) {
+func (s anomaly) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, average float64, reason string, err error) {
 	h, err := s.store.addHourData(key, t.Hour(), t.Minute(), value)
 	if err != nil {
-		return 0, "", err
+		return 0, 0, "", err
 	}
 
 	d, err := s.store.addDayOfWeekData(key, t.Hour(), t.Minute(), int(t.Weekday()), value)
 	if err != nil {
-		return 0, "", err
+		return 0, 0, "", err
 	}
 
 	m, err := s.store.addDayOfMonthData(key, t.Hour(), t.Minute(), t.Day(), value)
 	if err != nil {
-		return 0, "", err
+		return 0, 0, "", err
 	}
 
 	ha, hm := s.calculateScore(key, "hourly", h, value)
@@ -54,6 +54,8 @@ func (s anomaly) AddValue(ctx context.Context, key string, value float64, t time
 	reason = fmt.Sprintf("The current value is %v. \nThe normal value for this time is %v. \nNormally at this time on a %v is %v. Normally at this time on the %v day of the month is %v",
 		value, hm, t.Weekday(), dm, t.Day(), mm,
 	)
+
+	average = (hm + dm + mm) / 3
 
 	return
 

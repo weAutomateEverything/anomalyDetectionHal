@@ -13,9 +13,10 @@ type grpcBinding struct {
 }
 
 func (s grpcBinding) AnalyseData(ctx context.Context, i *InputData) (*AnomalyScore, error) {
-	score, msg, err := s.s.AddValueNow(ctx, i.Key, i.Value)
+	score, average, msg, err := s.s.AddValueNow(ctx, i.Key, i.Value)
 	return &AnomalyScore{
 		Explanation: msg,
+		Average:     average,
 		Score:       score,
 	}, err
 }

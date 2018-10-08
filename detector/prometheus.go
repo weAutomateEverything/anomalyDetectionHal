@@ -1,8 +1,8 @@
 package detector
 
 import (
-	"github.com/go-kit/kit/metrics"
 	"context"
+	"github.com/go-kit/kit/metrics"
 	"time"
 )
 
@@ -22,7 +22,7 @@ type prom struct {
 	Service
 }
 
-func (s *prom) AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, reason string, err error) {
+func (s *prom) AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, average float64, reason string, err error) {
 	defer func(begin time.Time) {
 		s.requestCount.With("method", "AddValueNow").Add(1)
 		s.requestLatency.With("method", "AddValueNow").Observe(time.Since(begin).Seconds())
@@ -30,9 +30,9 @@ func (s *prom) AddValueNow(ctx context.Context, key string, value float64) (anno
 			s.errorCount.With("method", "AddValueNow").Add(1)
 		}
 	}(time.Now())
-	return s.Service.AddValueNow(ctx,key,value)
+	return s.Service.AddValueNow(ctx, key, value)
 }
-func (s *prom) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, reason string, err error) {
+func (s *prom) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, average float64, reason string, err error) {
 	defer func(begin time.Time) {
 		s.requestCount.With("method", "AddValue").Add(1)
 		s.requestLatency.With("method", "AddValue").Observe(time.Since(begin).Seconds())
@@ -40,5 +40,5 @@ func (s *prom) AddValue(ctx context.Context, key string, value float64, t time.T
 			s.errorCount.With("method", "AddValue").Add(1)
 		}
 	}(time.Now())
-	return s.Service.AddValue(ctx, key,value,t)
+	return s.Service.AddValue(ctx, key, value, t)
 }

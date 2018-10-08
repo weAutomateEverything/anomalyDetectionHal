@@ -14,5 +14,6 @@ message InputData {
 
 message AnomalyScore {
     double score = 1;
-    string explanation = 2;
+    double average = 2;
+    string explanation = 3;
 }
