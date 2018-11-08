@@ -22,7 +22,7 @@ type prom struct {
 	Service
 }
 
-func (s *prom) AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, average float64, reason string, err error) {
+func (s *prom) AddValueNow(ctx context.Context, key string, value float64) (annomaly, average, hour, day, month float64, err error) {
 	defer func(begin time.Time) {
 		s.requestCount.With("method", "AddValueNow").Add(1)
 		s.requestLatency.With("method", "AddValueNow").Observe(time.Since(begin).Seconds())
@@ -32,7 +32,7 @@ func (s *prom) AddValueNow(ctx context.Context, key string, value float64) (anno
 	}(time.Now())
 	return s.Service.AddValueNow(ctx, key, value)
 }
-func (s *prom) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, average float64, reason string, err error) {
+func (s *prom) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly, average, hour, day, month float64, err error) {
 	defer func(begin time.Time) {
 		s.requestCount.With("method", "AddValue").Add(1)
 		s.requestLatency.With("method", "AddValue").Observe(time.Since(begin).Seconds())
