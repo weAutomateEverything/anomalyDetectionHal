@@ -1,7 +1,6 @@
 package detector
 
 import (
-	"fmt"
 	"golang.org/x/net/context"
 	"gonum.org/v1/gonum/stat"
 	"log"
@@ -10,8 +9,8 @@ import (
 )
 
 type Service interface {
-	AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, average float64, reason string, err error)
-	AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, average float64, reason string, err error)
+	AddValueNow(ctx context.Context, key string, value float64) (annomaly, average, hour, day, month float64, err error)
+	AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly, average, hour, day, month float64, err error)
 }
 
 func NewService(store Store) Service {
@@ -25,37 +24,31 @@ type anomaly struct {
 	store Store
 }
 
-func (s anomaly) AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, average float64, reason string, err error) {
+func (s anomaly) AddValueNow(ctx context.Context, key string, value float64) (annomaly, average, hour, day, month float64, err error) {
 	return s.AddValue(ctx, key, value, time.Now())
 }
 
-func (s anomaly) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, average float64, reason string, err error) {
+func (s anomaly) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly, average, hour, day, month float64, err error) {
 	h, err := s.store.addHourData(key, t.Hour(), t.Minute(), value)
 	if err != nil {
-		return 0, 0, "", err
+		return
 	}
 
 	d, err := s.store.addDayOfWeekData(key, t.Hour(), t.Minute(), int(t.Weekday()), value)
 	if err != nil {
-		return 0, 0, "", err
+		return
 	}
 
 	m, err := s.store.addDayOfMonthData(key, t.Hour(), t.Minute(), t.Day(), value)
 	if err != nil {
-		return 0, 0, "", err
+		return
 	}
 
-	ha, hm := s.calculateScore(key, "hourly", h, value)
-	da, dm := s.calculateScore(key, "day of week", d, value)
-	ma, mm := s.calculateScore(key, "day of month", m, value)
-
+	ha, hour := s.calculateScore(key, "hourly", h, value)
+	da, day := s.calculateScore(key, "day of week", d, value)
+	ma, month := s.calculateScore(key, "day of month", m, value)
 	annomaly = (ha + da + ma) / 3
-
-	reason = fmt.Sprintf("The current value is %v. \nThe normal value for this time is %v. \nNormally at this time on a %v is %v. Normally at this time on the %v day of the month is %v",
-		value, hm, t.Weekday(), dm, t.Day(), mm,
-	)
-
-	average = (hm + dm + mm) / 3
+	average = (hour + day + month) / 3
 
 	return
 

@@ -18,7 +18,7 @@ type logger struct {
 	Service
 }
 
-func (s logger) AddValueNow(ctx context.Context, key string, value float64) (annomaly float64, average float64, reason string, err error) {
+func (s logger) AddValueNow(ctx context.Context, key string, value float64) (annomaly, average, hour, day, month float64, err error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
 			"method", "AddValueNow",
@@ -26,7 +26,9 @@ func (s logger) AddValueNow(ctx context.Context, key string, value float64) (ann
 			"value", value,
 			"score", annomaly,
 			"average", average,
-			"reason", reason,
+			"hour", hour,
+			"day", day,
+			"month", month,
 			"took", time.Since(begin),
 			"err", err,
 		)
@@ -34,7 +36,7 @@ func (s logger) AddValueNow(ctx context.Context, key string, value float64) (ann
 	return s.Service.AddValueNow(ctx, key, value)
 }
 
-func (s logger) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly float64, average float64, reason string, err error) {
+func (s logger) AddValue(ctx context.Context, key string, value float64, t time.Time) (annomaly, average, hour, day, month float64, err error) {
 	defer func(begin time.Time) {
 		s.logger.Log(
 			"method", "AddValue",
@@ -42,7 +44,9 @@ func (s logger) AddValue(ctx context.Context, key string, value float64, t time.
 			"value", value,
 			"score", annomaly,
 			"average", average,
-			"reason", reason,
+			"hour", hour,
+			"day", day,
+			"month", month,
 			"time", t,
 			"took", time.Since(begin),
 			"err", err,

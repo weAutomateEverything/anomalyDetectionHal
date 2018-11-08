@@ -11,10 +11,7 @@ import (
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -56,28 +53,11 @@ func main() {
 	mux.Handle("/api/metrics", promhttp.Handler())
 	mux.Handle("/api/swagger.json", swagger{})
 
-	g := grpc.NewServer()
-	gServer := detector.NewGrpcBinding(service)
-	detector.RegisterAnomalyDetectorServer(g, gServer)
-	reflection.Register(g)
-
 	errs := make(chan error, 2)
-
-	ln, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		logger.Log("transport", "grpc", "address", ":8080", "error", err)
-		errs <- err
-		panic(err)
-	}
 
 	go func() {
 		logger.Log("transport", "http", "address", ":8081", "msg", "listening")
 		errs <- http.ListenAndServe(":8081", accessControl(mux))
-	}()
-
-	go func() {
-		logger.Log("transport", "grpc", "address", ":8080", "msg", "listening")
-		errs <- g.Serve(ln)
 	}()
 
 	go func() {
