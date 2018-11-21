@@ -3,8 +3,6 @@ version: 0.2
 phases:
   install:
     commands:
-    # printenv
-    # pwd
     - mkdir -p /go/src/github.com/weAutomateEverything/anomalyDetectionHal
     - cp -R * /go/src/github.com/weAutomateEverything/anomalyDetectionHal/
   pre_build:
@@ -28,5 +26,6 @@ artifacts:
   - anomaly
   - swagger.json
   - Dockerfile
+  - custom.pem
 cache:
   paths:
